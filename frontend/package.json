@@ -1,0 +1,18 @@
+{
+  "name": "@tasador/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interfaz del Tasador Inmobiliario",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tasador/shared": "*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "tasador-inmobiliario",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tasador in situ de inmuebles y llave de negocio",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev -w @tasador/backend",
+    "dev:web": "npm run dev -w @tasador/frontend",
+    "build": "npm run build -w @tasador/frontend",
+    "start": "npm run start -w @tasador/backend",
+    "test": "npm test -w @tasador/shared",
+    "usuario:crear": "npm run usuario:crear -w @tasador/backend --"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

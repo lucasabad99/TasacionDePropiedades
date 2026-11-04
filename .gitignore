@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+
+# Builds
+dist/
+build/
+*.tsbuildinfo
+
+# Variables de entorno (NUNCA subir). Los .env.example sí se versionan.
+.env
+.env.*
+!.env.example
+
+# Datos locales del backend (tasaciones guardadas)
+backend/data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Tests / cobertura
+coverage/
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

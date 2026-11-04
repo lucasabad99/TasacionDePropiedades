@@ -1,0 +1,32 @@
+# Blueprint de Render: en el dashboard, New → Blueprint → elegir este repositorio.
+# Un solo servicio: el backend sirve la API y la web compilada en la misma URL.
+services:
+  - type: web
+    name: tasador-inmobiliario-staging
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: staging
+      - key: SERVE_FRONTEND
+        value: "true"
+      # Muestra los accesos de prueba en el login. Pasar a "false" cuando haya usuarios reales.
+      - key: DEMO_MODE
+        value: "true"
+      - key: SESION_HORAS
+        value: "12"
+      # Render genera una clave aleatoria la primera vez.
+      - key: AUTH_SECRET
+        generateValue: true
+      # Postgres (Neon, Supabase, Render...). Render lo pide al crear el Blueprint.
+      - key: DATABASE_URL
+        sync: false
+      - key: VITE_INMOBILIARIA_NOMBRE
+        value: Tasador Inmobiliario

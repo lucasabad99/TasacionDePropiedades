@@ -1,0 +1,13 @@
+{
+  "name": "@tasador/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lógica de tasación compartida entre frontend y backend",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

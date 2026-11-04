@@ -1,0 +1,98 @@
+/* Al imprimir (o "Guardar como PDF") solo se muestra el reporte limpio. */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  body > *:not(.reporte) {
+    display: none !important;
+  }
+
+  .reporte {
+    display: block;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  .rep-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--brand-500);
+    margin-bottom: 18px;
+  }
+
+  .rep-head h1 {
+    font-size: 18pt;
+  }
+
+  .rep-head p {
+    font-size: 9.5pt;
+    color: #555;
+  }
+
+  .rep-total {
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    background: var(--brand-50);
+    border: 1px solid var(--brand-500);
+    border-radius: 8px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .rep-total span {
+    display: block;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #555;
+  }
+
+  .rep-total strong {
+    font-size: 22pt;
+  }
+
+  .reporte h2 {
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 16px 0 6px;
+  }
+
+  .reporte table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .reporte td {
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .reporte td:last-child {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .reporte tr.subtotal td {
+    font-weight: 700;
+    border-bottom: 2px solid #000;
+  }
+
+  .rep-obs {
+    white-space: pre-wrap;
+  }
+
+  .rep-legal {
+    margin-top: 24px;
+    font-size: 8.5pt;
+    color: #666;
+  }
+}

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasador In Situ: Inmueble + Llave</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --accent: #0284c7;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 1.25rem;
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-top: 20px;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            background-color: #f1f5f9;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: #fff;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .col {
+            flex: 1;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f1f5f9;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .toggle-container label {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            appearance: none;
+            background-color: #cbd5e1;
+            border-radius: 12px;
+            position: relative;
+            outline: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .toggle-switch:checked {
+            background-color: var(--accent);
+        }
+        .toggle-switch::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        .toggle-switch:checked::before {
+            transform: translateX(20px);
+        }
+        .hidden {
+            display: none;
+        }
+        .results-card {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .result-item.total {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-top: 1px dashed #bfdbfe;
+            padding-top: 8px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1>Tasador In Situ: Activos Mixtos</h1>
+
+    <!-- SECCIÓN 1: INMUEBLE -->
+    <div class="section-title">1. Valoración Inmobiliaria</div>
+    
+    <div class="row">
+        <div class="col form-group">
+            <label>Sup. Cubierta (m²)</label>
+            <input type="number" id="supCubierta" value="120" oninput="calcular()">
+        </div>
+        <div class="col form-group">
+            <label>Sup. Descub. (m²)</label>
+            <input type="number" id="supDescubierta" value="15" oninput="calcular()">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Precio Base Zona (USD/m²)</label>
+        <input type="number" id="precioBaseM2" value="1800" oninput="calcular()">
+    </div>
+
+    <div class="row">
+        <div class="col form-group">
+            <label>Estado</label>
+            <select id="estado" onchange="calcular()">
+                <option value="1.05">Excelente (+5%)</option>
+                <option value="1.00" selected>Bueno (Base)</option>
+                <option value="0.90">Regular (-10%)</option>
+                <option value="0.80">A Refaccionar (-20%)</option>
+            </select>
+        </div>
+        <div class="col form-group">
+            <label>Disposición</label>
+            <select id="disposicion" onchange="calcular()">
+                <option value="1.00" selected>Frente</option>
+                <option value="0.95">Contrafrente (-5%)</option>
+                <option value="0.90">Interno (-10%)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Margen de Negociación (%)</label>
+        <input type="number" id="margenNegociacion" value="5" oninput="calcular()">
+    </div>
+
+    <!-- SECCIÓN 2: LLAVE DE NEGOCIO -->
+    <div class="toggle-container">
+        <label for="incluyeLlave"><b>¿Incluye Llave de Negocio?</b></label>
+        <input type="checkbox" id="incluyeLlave" class="toggle-switch" onchange="toggleLlave()">
+    </div>
+
+    <div id="seccionLlave" class="hidden">
+        <div class="section-title">2. Llave de Negocio (Consultorios)</div>
+        
+        <div class="row">
+            <div class="col form-group">
+                <label>Cant. Consultorios</label>
+                <input type="number" id="cantConsultorios" value="4" oninput="calcular()">
+            </div>
+            <div class="col form-group">
+                <label>Canon/Mes p/Mod. (USD)</label>
+                <input type="number" id="canonModulo" value="400" oninput="calcular()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Ocupación Estimada (%)</label>
+                <input type="number" id="ocupacionPct" value="75" oninput="calcular()">
+            </div>
+            <div class="col form-group">
+                <label>Gastos Fijos/Mes (USD)</label>
+                <input type="number" id="gastosFijos" value="350" oninput="calcular()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Múltiplo EBITDA (Años de Recupero)</label>
+            <select id="multiploEbitda" onchange="calcular()">
+                <option value="1.5">1.5 Años (Bajo riesgo/Conservador)</option>
+                <option value="2.0" selected>2.0 Años (Promedio Mercado)</option>
+                <option value="2.5">2.5 Años (Alto flujo/Consolidado)</option>
+                <option value="3.0">3.0 Años (Excelente cápita/convenios)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: RESULTADOS -->
+    <div class="results-card">
+        <div class="result-item">
+            <span>Valor Inmueble:</span>
+            <b id="resInmueble">USD 0</b>
+        </div>
+        <div class="result-item">
+            <span>Valor Llave de Negocio:</span>
+            <b id="resLlave">USD 0</b>
+        </div>
+        <div class="result-item total">
+            <span>TOTAL SUGERIDO:</span>
+            <span id="resTotal">USD 0</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleLlave() {
+        const seccion = document.getElementById('seccionLlave');
+        const chk = document.getElementById('incluyeLlave');
+        if (chk.checked) {
+            seccion.classList.remove('hidden');
+        } else {
+            seccion.classList.add('hidden');
+        }
+        calcular();
+    }
+
+    function calcular() {
+        // CÁLCULO INMUEBLE
+        const supCub = parseFloat(document.getElementById('supCubierta').value) || 0;
+        const supDesc = parseFloat(document.getElementById('supDescubierta').value) || 0;
+        const precioM2 = parseFloat(document.getElementById('precioBaseM2').value) || 0;
+        const coefEstado = parseFloat(document.getElementById('estado').value) || 1;
+        const coefDisp = parseFloat(document.getElementById('disposicion').value) || 1;
+        const margenNeg = (parseFloat(document.getElementById('margenNegociacion').value) || 0) / 100;
+
+        const supHomogenea = supCub + (supDesc * 0.5);
+        const valorInmueble = supHomogenea * precioM2 * coefEstado * coefDisp * (1 - margenNeg);
+
+        // CÁLCULO LLAVE
+        let valorLlave = 0;
+        const incluyeLlave = document.getElementById('incluyeLlave').checked;
+
+        if (incluyeLlave) {
+            const cantCons = parseFloat(document.getElementById('cantConsultorios').value) || 0;
+            const canon = parseFloat(document.getElementById('canonModulo').value) || 0;
+            const ocupacion = (parseFloat(document.getElementById('ocupacionPct').value) || 0) / 100;
+            const gastos = parseFloat(document.getElementById('gastosFijos').value) || 0;
+            const multiplo = parseFloat(document.getElementById('multiploEbitda').value) || 2;
+
+            const ingresosMensuales = cantCons * canon * ocupacion;
+            const ebitdaMensual = ingresosMensuales - gastos;
+            const ebitdaAnual = ebitdaMensual * 12;
+
+            if (ebitdaAnual > 0) {
+                valorLlave = ebitdaAnual * multiplo;
+            }
+        }
+
+        const totalConsolidado = valorInmueble + valorLlave;
+
+        // FORMATO MONEDA
+        const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+        document.getElementById('resInmueble').innerText = fmt.format(valorInmueble);
+        document.getElementById('resLlave').innerText = fmt.format(valorLlave);
+        document.getElementById('resTotal').innerText = fmt.format(totalConsolidado);
+    }
+
+    // Calcular al iniciar
+    calcular();
+</script>
+
+</body>
+</html>

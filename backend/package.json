@@ -1,0 +1,22 @@
+{
+  "name": "@tasador/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API del Tasador Inmobiliario",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "usuario:crear": "node --env-file-if-exists=.env scripts/crear-usuario.js"
+  },
+  "dependencies": {
+    "@tasador/shared": "*",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "pg": "^8.23.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

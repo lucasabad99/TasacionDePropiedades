@@ -1,0 +1,164 @@
+/* ===== Barra superior ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ink-900);
+  color: #fff;
+  border-bottom: 3px solid var(--brand-500);
+}
+
+.topbar-inner {
+  max-width: 1120px;
+  height: var(--topbar-h);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--brand-500);
+  color: var(--ink-900);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-text strong {
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-text small {
+  font-size: 0.78rem;
+  color: var(--ink-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Layout principal ===== */
+.layout {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px var(--gutter) 96px; /* espacio para la barra móvil */
+  display: grid;
+  gap: 20px;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+    padding-bottom: 40px;
+  }
+
+  .results {
+    position: sticky;
+    top: calc(var(--topbar-h) + 20px);
+  }
+}
+
+/* ===== Acciones y usuario en la barra ===== */
+.topbar-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+  margin-left: 4px;
+  border-left: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--brand-500);
+  color: var(--ink-900);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  max-width: 160px;
+}
+
+.user-info strong {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-info small {
+  font-size: 0.72rem;
+  color: var(--ink-400);
+}
+
+/* Páginas con login: no se muestran hasta confirmar la sesión (evita un parpadeo) */
+body.protegida:not(.listo) {
+  visibility: hidden;
+}
+
+@media (max-width: 760px) {
+  .user-info,
+  .btn-label {
+    display: none;
+  }
+  .topbar-acciones .btn {
+    padding: 10px 11px;
+  }
+  .user-chip {
+    padding-left: 6px;
+    margin-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-text small {
+    display: none;
+  }
+}
