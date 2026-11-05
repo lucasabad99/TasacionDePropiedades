@@ -8,7 +8,7 @@ App para tasar propiedades in situ (desde el celular durante la visita): valor d
 | -------------- | -------------- | ------------------------------------------------------------------- |
 | `/login.html`  | Todos          | Ingreso con usuario y contraseña                                    |
 | `/`            | Agente y admin | Tasador. Cada agente ve solo su propio historial                    |
-| `/admin.html`  | Solo admin     | Panel: indicadores, resumen por agente, todas las tasaciones, CSV   |
+| `/panel.html`  | Agente y admin | Panel. Agente: sus tasaciones e indicadores. Admin: además, resumen por agente y filtro |
 
 ## Usuarios
 
@@ -44,7 +44,7 @@ TasadorInmobiliario/
 | Cambiar la fórmula                         | `shared/src/tasacion.js`                  |
 | Cambiar colores / marca                    | `frontend/src/styles/tokens.css`          |
 | Cambiar el nombre de la inmobiliaria       | `frontend/.env` → `VITE_INMOBILIARIA_NOMBRE` |
-| Dónde se guardan los datos (JSON / Postgres) | `backend/src/repositories/`             |
+| Dónde se guardan los datos (JSON / MongoDB) | `backend/src/repositories/`              |
 
 ## Puesta en marcha
 
@@ -76,16 +76,16 @@ Abrir http://localhost:5173. Para probar desde el celular en la misma red: `npm 
 
 Un solo servicio web: el backend sirve la API y la web compilada en la misma URL. La configuración está en [`render.yaml`](render.yaml).
 
-1. **Base de datos.** Crear un Postgres gratis (por ejemplo en [neon.tech](https://neon.tech), que no vence) y copiar la *connection string* (`postgresql://...`).
-2. **Render.** Ir a New → Blueprint, elegir este repositorio y pegar la `DATABASE_URL` cuando la pida. `AUTH_SECRET` se genera solo.
+1. **Base de datos.** Crear un cluster gratis (M0) en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). En *Database Access* crear un usuario con contraseña; en *Network Access* permitir `0.0.0.0/0` (Render gratis no tiene IP fija). Copiar la cadena de conexión (`mongodb+srv://...`).
+2. **Render.** Ir a New → Blueprint, elegir este repositorio y pegar la `MONGODB_URI` cuando la pida. `AUTH_SECRET` se genera solo.
 3. Cada `git push` a `main` vuelve a desplegar automáticamente.
 
-Las tablas se crean solas al arrancar. Sin `DATABASE_URL`, los datos van a archivos JSON, que en Render se borran en cada reinicio (el log lo avisa).
+Las colecciones e índices se crean solos al arrancar. Sin `MONGODB_URI`, los datos van a archivos JSON, que en Render se borran en cada reinicio (el log lo avisa).
 
 Para crear usuarios reales en staging, correr el comando desde la PC apuntando a esa base:
 
 ```bash
-DATABASE_URL="postgresql://..." npm run usuario:crear -- --usuario mgarcia --nombre "Marta García" --password "unaClaveSegura"
+MONGODB_URI="mongodb+srv://..." npm run usuario:crear -- --usuario mgarcia --nombre "Marta García" --password "unaClaveSegura"
 ```
 
 Con `NODE_ENV=staging` o `production` el backend no arranca si falta `AUTH_SECRET`.

@@ -13,17 +13,15 @@ const ICONOS = {
 const ROL_LABEL = { admin: 'Administrador', agente: 'Agente' };
 
 /**
- * Agrega a la barra superior: acceso al panel/tasador (admin), usuario y "Salir".
- * @param {'tasador'|'admin'} pagina
+ * Agrega a la barra superior: acceso al panel o al tasador, usuario y "Salir".
+ * @param {'tasador'|'panel'} pagina
  */
 export function renderTopbar(contenedor, usuario, { pagina }) {
-  let enlace = '';
-  if (usuario.rol === 'admin') {
-    enlace =
-      pagina === 'admin'
-        ? `<a class="btn btn-on-dark" href="/">${ICONOS.tasar}<span class="btn-label">Tasar</span></a>`
-        : `<a class="btn btn-on-dark" href="/admin.html">${ICONOS.panel}<span class="btn-label">Panel</span></a>`;
-  }
+  const nombrePanel = usuario.rol === 'admin' ? 'Panel' : 'Mi panel';
+  const enlace =
+    pagina === 'panel'
+      ? `<a class="btn btn-on-dark" href="/">${ICONOS.tasar}<span class="btn-label">Tasar</span></a>`
+      : `<a class="btn btn-on-dark" href="/panel.html">${ICONOS.panel}<span class="btn-label">${nombrePanel}</span></a>`;
 
   contenedor.insertAdjacentHTML(
     'beforeend',

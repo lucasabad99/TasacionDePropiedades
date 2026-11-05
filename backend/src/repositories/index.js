@@ -4,14 +4,14 @@ import { crearRepositorioUsuarios } from './usuarios.repository.js';
 
 /**
  * Elige dónde se guardan los datos:
- *  - Con DATABASE_URL → PostgreSQL (staging / producción).
- *  - Sin DATABASE_URL → archivos JSON en DATA_DIR (desarrollo local).
+ *  - Con MONGODB_URI → MongoDB (staging / producción).
+ *  - Sin MONGODB_URI → archivos JSON en DATA_DIR (desarrollo local).
  */
 export async function crearRepositorios() {
-  if (env.databaseUrl) {
-    const { crearRepositoriosPostgres } = await import('./postgres.js');
-    const repos = await crearRepositoriosPostgres(env.databaseUrl);
-    return { ...repos, descripcion: 'PostgreSQL' };
+  if (env.mongodbUri) {
+    const { crearRepositoriosMongo } = await import('./mongo.js');
+    const repos = await crearRepositoriosMongo(env.mongodbUri, env.mongodbDb);
+    return { ...repos, descripcion: `MongoDB (base "${env.mongodbDb}")` };
   }
 
   return {

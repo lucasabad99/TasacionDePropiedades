@@ -17,8 +17,9 @@ export const env = Object.freeze({
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean),
-  /** Si está definida, los datos se guardan en PostgreSQL en vez de archivos JSON. */
-  databaseUrl: process.env.DATABASE_URL || '',
+  /** Si está definida, los datos se guardan en MongoDB en vez de archivos JSON. */
+  mongodbUri: process.env.MONGODB_URI || '',
+  mongodbDb: process.env.MONGODB_DB || 'tasador',
   dataDir: path.resolve(process.cwd(), process.env.DATA_DIR || './data'),
   serveFrontend: process.env.SERVE_FRONTEND === 'true',
 

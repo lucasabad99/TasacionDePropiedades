@@ -3,7 +3,7 @@
   text-decoration: none;
 }
 
-.admin {
+.panel {
   max-width: 1120px;
   margin: 0 auto;
   padding: 24px var(--gutter) 48px;
@@ -12,7 +12,7 @@
 }
 
 /* ===== Encabezado ===== */
-.admin-head {
+.panel-head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -20,17 +20,17 @@
   gap: 16px;
 }
 
-.admin-head h1 {
+.panel-head h1 {
   font-size: 1.5rem;
   letter-spacing: -0.01em;
 }
 
-.admin-head p {
+.panel-head p {
   margin-top: 2px;
   color: var(--ink-500);
 }
 
-.admin-head-acciones {
+.panel-head-acciones {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -95,7 +95,7 @@
 }
 
 /* ===== Secciones ===== */
-.admin-section {
+.panel-section {
   display: grid;
   gap: 12px;
 }
@@ -545,3 +545,9 @@
   white-space: pre-wrap;
   font-size: 0.92rem;
 }
+
+/* ===== Vista de agente: sin columna ni filtro de agente ===== */
+.vista-agente .col-agente {
+  display: none !important;
+}
+

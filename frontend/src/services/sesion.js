@@ -67,5 +67,5 @@ export function requerirSesion({ rol } = {}) {
 export function destinoTrasLogin(usuario, volver) {
   const esInterna = typeof volver === 'string' && volver.startsWith('/') && !volver.startsWith('//');
   if (esInterna && !volver.startsWith(LOGIN)) return volver;
-  return usuario.rol === 'admin' ? '/admin.html' : '/';
+  return usuario.rol === 'admin' ? '/panel.html' : '/';
 }

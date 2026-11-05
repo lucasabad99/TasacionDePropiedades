@@ -25,8 +25,10 @@ services:
       # Render genera una clave aleatoria la primera vez.
       - key: AUTH_SECRET
         generateValue: true
-      # Postgres (Neon, Supabase, Render...). Render lo pide al crear el Blueprint.
-      - key: DATABASE_URL
+      # Cadena de conexión de MongoDB Atlas. Render la pide al crear el Blueprint.
+      - key: MONGODB_URI
         sync: false
+      - key: MONGODB_DB
+        value: tasador
       - key: VITE_INMOBILIARIA_NOMBRE
         value: Tasador Inmobiliario

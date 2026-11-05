@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
         input: {
           tasador: 'index.html',
           login: 'login.html',
-          admin: 'admin.html',
+          panel: 'panel.html',
         },
       },
     },

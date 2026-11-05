@@ -7,8 +7,8 @@ validarEnv();
 
 const { usuarios, tasaciones, descripcion } = await crearRepositorios();
 
-if (env.esEntornoReal && !env.databaseUrl) {
-  console.warn('[api] ⚠️  Sin DATABASE_URL: los datos van a archivos JSON y en Render se borran en cada reinicio.');
+if (env.esEntornoReal && !env.mongodbUri) {
+  console.warn('[api] ⚠️  Sin MONGODB_URI: los datos van a archivos JSON y en Render se borran en cada reinicio.');
 }
 
 await sembrarDatos({ usuarios, tasaciones, demoMode: env.demoMode });

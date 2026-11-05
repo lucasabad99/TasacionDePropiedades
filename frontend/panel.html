@@ -16,26 +16,26 @@
   <body class="protegida">
     <header class="topbar">
       <div class="topbar-inner">
-        <a class="brand" href="/admin.html">
+        <a class="brand" href="/panel.html">
           <span class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>
           </span>
           <div class="brand-text">
             <strong data-app="nombre">Tasador Inmobiliario</strong>
-            <small>Panel de administración</small>
+            <small id="marcaSub">Panel</small>
           </div>
         </a>
         <div class="topbar-acciones" id="topbarAcciones"></div>
       </div>
     </header>
 
-    <main class="admin">
-      <div class="admin-head">
+    <main class="panel">
+      <div class="panel-head">
         <div>
-          <h1>Panel de administración</h1>
-          <p>Tasaciones realizadas por cada agente</p>
+          <h1 id="panelTitulo">Panel</h1>
+          <p id="panelSubtitulo"></p>
         </div>
-        <div class="admin-head-acciones">
+        <div class="panel-head-acciones">
           <button type="button" class="btn btn-secondary" id="btnExportar">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
             Exportar CSV
@@ -50,12 +50,12 @@
       <!-- Indicadores -->
       <section aria-labelledby="t-kpis">
         <h2 class="sr-only" id="t-kpis">Resumen</h2>
-        <p class="kpis-alcance" id="kpisAlcance">Todos los agentes</p>
+        <p class="kpis-alcance" id="kpisAlcance"></p>
         <div class="kpis" id="kpis"></div>
       </section>
 
       <!-- Agentes -->
-      <section class="admin-section" aria-labelledby="t-agentes">
+      <section class="panel-section" aria-labelledby="t-agentes" data-solo-admin hidden>
         <div class="section-head">
           <h2 id="t-agentes">Agentes</h2>
           <button type="button" class="link-btn" id="btnVerTodos" hidden>Ver todos los agentes</button>
@@ -66,9 +66,9 @@
       </section>
 
       <!-- Tabla de tasaciones -->
-      <section class="admin-section" aria-labelledby="tituloTabla">
+      <section class="panel-section" aria-labelledby="tituloTabla">
         <div class="section-head">
-          <h2 id="tituloTabla">Todas las tasaciones</h2>
+          <h2 id="tituloTabla">Tasaciones</h2>
           <span class="conteo" id="conteo"></span>
         </div>
 
@@ -78,8 +78,8 @@
             <label for="buscar" class="sr-only">Buscar</label>
             <input type="search" id="buscar" placeholder="Buscar por dirección, cliente o tipo…" />
           </div>
-          <label for="filtroAgente" class="sr-only">Filtrar por agente</label>
-          <select id="filtroAgente"></select>
+          <label for="filtroAgente" class="sr-only" data-solo-admin hidden>Filtrar por agente</label>
+          <select id="filtroAgente" data-solo-admin hidden></select>
         </div>
 
         <div class="tabla-wrap">
@@ -89,7 +89,7 @@
                 <th scope="col">Fecha</th>
                 <th scope="col">Propiedad</th>
                 <th scope="col">Cliente</th>
-                <th scope="col">Agente</th>
+                <th scope="col" class="col-agente">Agente</th>
                 <th scope="col" class="num">Total</th>
               </tr>
             </thead>
@@ -120,6 +120,6 @@
     <section id="reporte" class="reporte" aria-hidden="true"></section>
     <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
-    <script type="module" src="/src/pages/admin.js"></script>
+    <script type="module" src="/src/pages/panel.js"></script>
   </body>
 </html>

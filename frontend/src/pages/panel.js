@@ -1,6 +1,6 @@
 import '../lib/pwa.js';
 import '../styles/app.css';
-import '../styles/admin.css';
+import '../styles/panel.css';
 import '../styles/print.css';
 
 import { COEFICIENTES } from '@tasador/shared';
@@ -22,7 +22,13 @@ import { filasDesglose } from '../ui/resultados.js';
 import { toast } from '../ui/toast.js';
 import { renderTopbar } from '../ui/topbar.js';
 
-const sesion = requerirSesion({ rol: 'admin' });
+/**
+ * Panel de tasaciones.
+ *  - Admin: todas las tasaciones, resumen por agente y filtro por agente.
+ *  - Agente: solo las suyas (el backend ya las filtra) con sus indicadores.
+ */
+const sesion = requerirSesion();
+const esAdmin = sesion?.usuario.rol === 'admin';
 
 const SIN_ASIGNAR = 'sin-asignar';
 const ROL_LABEL = { admin: 'Administrador', agente: 'Agente' };
@@ -44,7 +50,10 @@ const suma = (lista) => lista.reduce((acc, t) => acc + t.resultado.total, 0);
 // ---------- Datos ----------
 async function cargar() {
   try {
-    const [agentes, tasaciones] = await Promise.all([api.resumenAgentes(), api.listarTasaciones()]);
+    const [agentes, tasaciones] = await Promise.all([
+      esAdmin ? api.resumenAgentes() : [],
+      api.listarTasaciones(),
+    ]);
     estado.agentes = agentes;
     estado.tasaciones = tasaciones;
     // Si el agente filtrado ya no existe, se quita el filtro
@@ -52,7 +61,7 @@ async function cargar() {
     render();
   } catch (err) {
     $('agentes').innerHTML = `<p class="estado-vacio">${escapeHtml(err.message)}</p>`;
-    $('filas').innerHTML = '';
+    $('filas').innerHTML = `<tr><td colspan="5" class="tabla-vacia">${escapeHtml(err.message)}</td></tr>`;
     toast(err.message, 'error');
   }
 }
@@ -71,9 +80,26 @@ function filtradas() {
 function render() {
   const lista = filtradas();
   renderKpis(lista);
-  renderAgentes();
-  renderFiltroAgente();
+  if (esAdmin) {
+    renderAgentes();
+    renderFiltroAgente();
+  }
   renderTabla(lista);
+}
+
+/** Cuántas tasaciones de la lista se hicieron este mes y el mes anterior. */
+function porMes(lista) {
+  const hoy = new Date();
+  const clave = (d) => d.getFullYear() * 12 + d.getMonth();
+  const actual = clave(hoy);
+  let esteMes = 0;
+  let mesPasado = 0;
+  for (const t of lista) {
+    const k = clave(new Date(t.creadaEn));
+    if (k === actual) esteMes++;
+    else if (k === actual - 1) mesPasado++;
+  }
+  return { esteMes, mesPasado };
 }
 
 const kpi = (label, valor, sub = '') => `
@@ -88,14 +114,18 @@ function renderKpis(lista) {
   const conLlave = lista.filter((t) => t.resultado.llave?.incluida).length;
   const ultima = lista[0];
 
-  const alcance = [estado.agenteId ? nombreAgente(estado.agenteId) : 'Todos los agentes'];
+  const { esteMes, mesPasado } = porMes(lista);
+
+  const alcance = [];
+  if (esAdmin) alcance.push(estado.agenteId ? nombreAgente(estado.agenteId) : 'Todos los agentes');
+  else alcance.push('Tus tasaciones');
   if (estado.busqueda.trim()) alcance.push(`búsqueda “${estado.busqueda.trim()}”`);
   $('kpisAlcance').textContent = alcance.join(' · ');
 
   $('kpis').innerHTML = [
     kpi('Tasaciones', fmtNum(lista.length), conLlave ? `${conLlave} con llave de negocio` : 'Sin llave de negocio'),
-    kpi('Valor total tasado', fmtUSDCompacto(total), 'Suma de los totales sugeridos'),
-    kpi('Valor promedio', lista.length ? fmtUSD(total / lista.length) : '—', 'Por tasación'),
+    kpi('Este mes', fmtNum(esteMes), `${fmtNum(mesPasado)} el mes pasado`),
+    kpi('Valor total tasado', fmtUSDCompacto(total), lista.length ? `Promedio ${fmtUSDCompacto(total / lista.length)}` : 'Suma de los totales sugeridos'),
     kpi('Última tasación', ultima ? fmtHace(ultima.creadaEn) : '—', ultima?.propiedad.direccion || ''),
   ].join('');
 }
@@ -156,14 +186,20 @@ function renderFiltroAgente() {
 }
 
 function renderTabla(lista) {
-  $('tituloTabla').textContent = estado.agenteId
-    ? `Tasaciones de ${nombreAgente(estado.agenteId)}`
-    : 'Todas las tasaciones';
+  $('tituloTabla').textContent = !esAdmin
+    ? 'Mis tasaciones'
+    : estado.agenteId
+      ? `Tasaciones de ${nombreAgente(estado.agenteId)}`
+      : 'Todas las tasaciones';
   $('conteo').textContent = `${fmtNum(lista.length)} ${lista.length === 1 ? 'resultado' : 'resultados'}`;
 
   if (!lista.length) {
     $('filas').innerHTML = `<tr><td colspan="5" class="tabla-vacia">${
-      estado.tasaciones.length ? 'No hay tasaciones con estos filtros.' : 'Todavía no hay tasaciones guardadas.'
+      estado.tasaciones.length
+        ? 'No hay tasaciones con estos filtros.'
+        : esAdmin
+          ? 'Todavía no hay tasaciones guardadas.'
+          : 'Todavía no guardaste tasaciones. Tocá “Nueva tasación” para empezar.'
     }</td></tr>`;
     return;
   }
@@ -180,7 +216,7 @@ function renderTabla(lista) {
             <small>${escapeHtml(p.tipo || 'Sin tipo')} ${llave}</small>
           </td>
           <td data-label="Cliente">${escapeHtml(p.cliente || '—')}</td>
-          <td data-label="Agente">
+          <td data-label="Agente" class="col-agente">
             <span class="agente-mini"><span class="avatar avatar-sm">${escapeHtml(iniciales(t.agente?.nombre))}</span>${escapeHtml(t.agente?.nombre ?? 'Sin asignar')}</span>
           </td>
           <td data-label="Total" class="num"><strong>${fmtUSD(t.resultado.total)}</strong></td>
@@ -292,9 +328,10 @@ function exportarCSV() {
   const csv = '﻿' + filas.map((f) => f.map(celda).join(';')).join('\r\n');
 
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const prefijo = esAdmin ? 'tasaciones' : `tasaciones-${sesion.usuario.usuario}`;
   const a = Object.assign(document.createElement('a'), {
     href: url,
-    download: `tasaciones-${new Date().toISOString().slice(0, 10)}.csv`,
+    download: `${prefijo}-${new Date().toISOString().slice(0, 10)}.csv`,
   });
   a.click();
   URL.revokeObjectURL(url);
@@ -308,8 +345,16 @@ function filtrarPorAgente(id) {
 
 function iniciar({ usuario }) {
   document.querySelectorAll('[data-app="nombre"]').forEach((el) => (el.textContent = appConfig.nombreInmobiliaria));
-  document.title = `Panel · ${appConfig.nombreInmobiliaria}`;
-  renderTopbar($('topbarAcciones'), usuario, { pagina: 'admin' });
+  const titulo = esAdmin ? 'Panel de administración' : 'Mi panel';
+  document.title = `${titulo} · ${appConfig.nombreInmobiliaria}`;
+  $('marcaSub').textContent = titulo;
+  $('panelTitulo').textContent = esAdmin ? titulo : `Hola, ${usuario.nombre.split(' ')[0]}`;
+  $('panelSubtitulo').textContent = esAdmin
+    ? 'Tasaciones realizadas por cada agente'
+    : 'Tus tasaciones y cómo vas este mes';
+  document.body.classList.toggle('vista-agente', !esAdmin);
+  document.querySelectorAll('[data-solo-admin]').forEach((el) => (el.hidden = !esAdmin));
+  renderTopbar($('topbarAcciones'), usuario, { pagina: 'panel' });
 
   $('agentes').addEventListener('click', (e) => {
     const card = e.target.closest('.agente-card');
