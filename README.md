@@ -78,7 +78,7 @@ Un solo servicio web: el backend sirve la API y la web compilada en la misma URL
 
 1. **Base de datos.** Crear un cluster gratis (M0) en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). En *Database Access* crear un usuario con contraseña; en *Network Access* permitir `0.0.0.0/0` (Render gratis no tiene IP fija). Copiar la cadena de conexión (`mongodb+srv://...`).
 2. **Render.** Ir a New → Blueprint, elegir este repositorio y pegar la `MONGODB_URI` cuando la pida. `AUTH_SECRET` se genera solo.
-3. Cada `git push` a `main` vuelve a desplegar automáticamente.
+3. Cada `git push` a `develop` vuelve a desplegar automáticamente. `main` queda reservada para producción.
 
 Las colecciones e índices se crean solos al arrancar. Sin `MONGODB_URI`, los datos van a archivos JSON, que en Render se borran en cada reinicio (el log lo avisa).
 
