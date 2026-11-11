@@ -14,7 +14,8 @@
     "@tasador/shared": "*",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "mongodb": "^6.22.0"
+    "mongodb": "^6.22.0",
+    "serverless-http": "^3.2.0"
   },
   "engines": {
     "node": ">=22"

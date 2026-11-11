@@ -1,0 +1,36 @@
+# Netlify: la web (frontend/dist) se sirve desde el CDN y la API corre como
+# Netlify Function (netlify/functions/api.mjs). No hay servidor que se duerma.
+#
+# Variables de entorno: se cargan en Netlify → Site configuration → Environment
+# variables (las de este archivo NO llegan a la función en tiempo de ejecución).
+
+[build]
+  command = "npm run build"
+  publish = "frontend/dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  # La función usa la misma lógica compartida que el frontend
+  included_files = ["shared/src/**"]
+
+# /api/* → la función. Va antes que cualquier otra regla.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# El service worker siempre fresco, para que las actualizaciones lleguen enseguida
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Los archivos de /assets llevan hash en el nombre: se pueden cachear para siempre
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

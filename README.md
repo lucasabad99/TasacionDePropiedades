@@ -72,15 +72,27 @@ Abrir http://localhost:5173. Para probar desde el celular en la misma red: `npm 
 | `npm test`      | Corre los tests de la fórmula de tasación              |
 | `npm run usuario:crear -- …` | Crea un usuario (ver sección Usuarios)    |
 
-## Staging en Render
+## Staging en Netlify
 
-Un solo servicio web: el backend sirve la API y la web compilada en la misma URL. La configuración está en [`render.yaml`](render.yaml).
+La web se sirve desde el CDN de Netlify y la API corre como Netlify Function ([`netlify/functions/api.mjs`](netlify/functions/api.mjs)), usando la misma app de Express que en local. No hay servidor que se duerma: la primera carga es inmediata. La configuración está en [`netlify.toml`](netlify.toml).
 
-1. **Base de datos.** Crear un cluster gratis (M0) en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). En *Database Access* crear un usuario con contraseña; en *Network Access* permitir `0.0.0.0/0` (Render gratis no tiene IP fija). Copiar la cadena de conexión (`mongodb+srv://...`).
-2. **Render.** Ir a New → Blueprint, elegir este repositorio y pegar la `MONGODB_URI` cuando la pida. `AUTH_SECRET` se genera solo.
-3. Cada `git push` a `develop` vuelve a desplegar automáticamente. `main` queda reservada para producción.
+1. **Base de datos.** Crear un cluster gratis (M0) en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). En *Database Access* crear un usuario con contraseña; en *Network Access* permitir `0.0.0.0/0` (las funciones no tienen IP fija). Copiar la cadena de conexión (`mongodb+srv://...`).
+2. **Netlify.** Add new project → Import an existing project → GitHub → este repositorio, rama `develop`. Build, carpeta y funciones se leen solos de `netlify.toml`.
+3. **Variables de entorno** (Site configuration → Environment variables). Las de `netlify.toml` no llegan a la función, por eso van acá:
 
-Las colecciones e índices se crean solos al arrancar. Sin `MONGODB_URI`, los datos van a archivos JSON, que en Render se borran en cada reinicio (el log lo avisa).
+   | Variable                   | Valor                                                                 |
+   | -------------------------- | --------------------------------------------------------------------- |
+   | `MONGODB_URI`              | La cadena de Atlas (marcarla como secreta)                            |
+   | `MONGODB_DB`               | `tasador`                                                             |
+   | `AUTH_SECRET`              | Generarla con `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` (secreta) |
+   | `NODE_ENV`                 | `staging`                                                             |
+   | `DEMO_MODE`                | `true` (pasar a `false` cuando haya usuarios reales)                  |
+   | `SESION_HORAS`             | `12`                                                                  |
+   | `VITE_INMOBILIARIA_NOMBRE` | `Tasador Inmobiliario`                                                |
+
+4. Cada `git push` a `develop` vuelve a desplegar automáticamente. `main` queda reservada para producción.
+
+Las colecciones e índices se crean solos en la primera petición. En Netlify `MONGODB_URI` es obligatoria (el disco de las funciones es de solo lectura).
 
 Para crear usuarios reales en staging, correr el comando desde la PC apuntando a esa base:
 
@@ -90,7 +102,7 @@ MONGODB_URI="mongodb+srv://..." npm run usuario:crear -- --usuario mgarcia --nom
 
 Con `NODE_ENV=staging` o `production` el backend no arranca si falta `AUTH_SECRET`.
 
-> Plan gratis de Render: si nadie la usa por 15 minutos, la app se duerme y la primera visita tarda unos 50 segundos en despertarla.
+> [`render.yaml`](render.yaml) sigue en el repo como alternativa (un servidor Node en Render), pero en el plan gratis se duerme a los 15 minutos y tarda ~50 s en despertar.
 
 ## Instalar en el celular
 
