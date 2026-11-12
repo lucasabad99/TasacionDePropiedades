@@ -10,9 +10,6 @@ import { crearAuthRouter } from './routes/auth.routes.js';
 import { crearConfigRouter } from './routes/config.routes.js';
 import { crearTasacionesRouter } from './routes/tasaciones.routes.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
-
 /**
  * @param {{ usuarios: object, tasaciones: object }} repos  Repositorios (archivo JSON, base de datos, etc.)
  */
@@ -38,6 +35,9 @@ export function createApp({ usuarios, tasaciones }) {
 
   // --- Frontend compilado (staging / producción en un solo servidor) ---
   if (env.serveFrontend) {
+    // Se calcula acá y no arriba: en la Netlify Function (empaquetada como CommonJS)
+    // import.meta.url viene vacío, y ahí el frontend lo sirve el CDN.
+    const FRONTEND_DIST = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../frontend/dist');
     app.use(express.static(FRONTEND_DIST, { extensions: ['html'] }));
     app.get(/.*/, (_req, res) => res.sendFile(path.join(FRONTEND_DIST, 'index.html')));
   }

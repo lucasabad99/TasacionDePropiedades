@@ -11,8 +11,14 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Estas variables no son secretas (nombre de la base, entorno, textos): sin esto
+  # el escáner de secretos de Netlify corta el build al verlas en el código.
+  SECRETS_SCAN_OMIT_KEYS = "MONGODB_DB,NODE_ENV,DEMO_MODE,SESION_HORAS,VITE_INMOBILIARIA_NOMBRE"
 
 [functions]
+  node_bundler = "esbuild"
+  # mongodb tiene dependencias opcionales que esbuild no puede empaquetar: va tal cual
+  external_node_modules = ["mongodb"]
   # La función usa la misma lógica compartida que el frontend
   included_files = ["shared/src/**"]
 
