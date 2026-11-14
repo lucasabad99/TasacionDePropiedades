@@ -551,3 +551,84 @@
   display: none !important;
 }
 
+
+/* ===================== Fotos y publicación en el detalle ===================== */
+.tag-oculta {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.det-fotos {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  padding-bottom: 4px;
+}
+
+.det-fotos img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  display: block;
+}
+
+.det-publicar {
+  margin-bottom: 12px;
+}
+
+/* ===================== Consultas de la página pública ===================== */
+.consultas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+
+.consulta {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.consulta-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.consulta-head small,
+.consulta-propiedad {
+  font-size: 0.82rem;
+  color: var(--ink-500);
+}
+
+.consulta-contacto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.88rem;
+}
+
+.consulta-contacto a,
+.consulta-propiedad a {
+  color: var(--brand-700);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.consulta-mensaje {
+  white-space: pre-line;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.consulta .btn {
+  justify-self: start;
+}

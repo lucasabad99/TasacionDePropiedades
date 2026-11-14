@@ -8,7 +8,7 @@
  *
  * Al cambiar algo importante de esta lógica, subir VERSION.
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `tasador-${VERSION}`;
 
 self.addEventListener('install', () => self.skipWaiting());

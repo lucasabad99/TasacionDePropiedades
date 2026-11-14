@@ -20,12 +20,17 @@ export async function crearRepositoriosMongo(uri, nombreDb) {
 
   const colUsuarios = db.collection('usuarios');
   const colTasaciones = db.collection('tasaciones');
+  const colFotos = db.collection('fotos');
+  const colConsultas = db.collection('consultas');
 
   await Promise.all([
     colUsuarios.createIndex({ id: 1 }, { unique: true }),
     colUsuarios.createIndex({ usuario: 1 }, { unique: true }),
     colTasaciones.createIndex({ id: 1 }, { unique: true }),
     colTasaciones.createIndex({ 'agente.id': 1, creadaEn: -1 }),
+    colFotos.createIndex({ id: 1 }, { unique: true }),
+    colConsultas.createIndex({ id: 1 }, { unique: true }),
+    colConsultas.createIndex({ creadaEn: -1 }),
   ]);
 
   const usuarios = {
@@ -70,6 +75,10 @@ export async function crearRepositoriosMongo(uri, nombreDb) {
       return tasacion;
     },
 
+    async actualizar(id, cambios) {
+      return colTasaciones.findOneAndUpdate({ id }, { $set: cambios }, { returnDocument: 'after', ...SIN_ID_MONGO });
+    },
+
     async crearVarias(lista) {
       if (!lista.length) return 0;
       await colTasaciones.insertMany(lista.map((t) => ({ ...t })));
@@ -82,5 +91,42 @@ export async function crearRepositoriosMongo(uri, nombreDb) {
     },
   };
 
-  return { usuarios, tasaciones, cerrar: () => cliente.close() };
+  /** Fotos: la imagen va en el mismo documento (comprimida en el navegador, ~300 KB). */
+  const SIN_BYTES = { projection: { _id: 0, datos: 0 } };
+  const fotos = {
+    obtenerMeta: (id) => colFotos.findOne({ id }, SIN_BYTES),
+
+    async crear({ agenteId, contentType, datos }) {
+      const foto = { id: randomUUID(), agenteId, contentType, tamano: datos.length, creadaEn: new Date().toISOString() };
+      await colFotos.insertOne({ ...foto, datos });
+      return foto;
+    },
+
+    async obtener(id) {
+      const foto = await colFotos.findOne({ id }, SIN_ID_MONGO);
+      if (!foto) return null;
+      const { datos } = foto; // Binary de BSON → Buffer
+      return { ...foto, datos: Buffer.from(datos.buffer.subarray(0, datos.position)) };
+    },
+
+    async eliminar(ids) {
+      if (ids.length) await colFotos.deleteMany({ id: { $in: ids } });
+    },
+  };
+
+  const consultas = {
+    listar: () => colConsultas.find({}, SIN_ID_MONGO).sort({ creadaEn: -1 }).toArray(),
+
+    async crear(consulta) {
+      await colConsultas.insertOne({ ...consulta });
+      return consulta;
+    },
+
+    async eliminar(id) {
+      const { deletedCount } = await colConsultas.deleteOne({ id });
+      return deletedCount > 0;
+    },
+  };
+
+  return { usuarios, tasaciones, fotos, consultas, cerrar: () => cliente.close() };
 }

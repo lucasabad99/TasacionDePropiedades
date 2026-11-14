@@ -4,7 +4,7 @@
   "description": "Tasación in situ de inmuebles y llave de negocio.",
   "lang": "es-AR",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/tasador.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

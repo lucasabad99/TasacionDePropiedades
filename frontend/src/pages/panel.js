@@ -19,6 +19,7 @@ import { api } from '../services/api.js';
 import { requerirSesion } from '../services/sesion.js';
 import { prepararReporte } from '../ui/reporte.js';
 import { filasDesglose } from '../ui/resultados.js';
+import { urlFoto } from '../ui/fotos.js';
 import { toast } from '../ui/toast.js';
 import { renderTopbar } from '../ui/topbar.js';
 
@@ -207,13 +208,19 @@ function renderTabla(lista) {
   $('filas').innerHTML = lista
     .map((t) => {
       const p = t.propiedad;
-      const llave = t.resultado.llave?.incluida ? '<span class="tag">+ llave</span>' : '';
+      const tags = [
+        t.resultado.llave?.incluida && '<span class="tag">+ llave</span>',
+        t.fotos?.length && `<span class="tag">${t.fotos.length} ${t.fotos.length === 1 ? 'foto' : 'fotos'}</span>`,
+        t.publicada === false && '<span class="tag tag-oculta">No publicada</span>',
+      ]
+        .filter(Boolean)
+        .join(' ');
       return `
         <tr data-id="${escapeHtml(t.id)}" tabindex="0">
           <td data-label="Fecha"><span title="${escapeHtml(fmtFecha(t.creadaEn))}">${escapeHtml(fmtFechaCorta(t.creadaEn))}</span></td>
           <td data-label="Propiedad" class="col-propiedad">
             <strong>${escapeHtml(p.direccion || 'Sin dirección')}</strong>
-            <small>${escapeHtml(p.tipo || 'Sin tipo')} ${llave}</small>
+            <small>${escapeHtml(p.tipo || 'Sin tipo')} ${tags}</small>
           </td>
           <td data-label="Cliente">${escapeHtml(p.cliente || '—')}</td>
           <td data-label="Agente" class="col-agente">
@@ -243,11 +250,25 @@ function abrirDetalle(id) {
       <span>Valor total sugerido</span>
       <strong>${fmtUSD(r.total)}</strong>
     </div>
+    ${
+      t.fotos?.length
+        ? `<div class="det-fotos">${t.fotos
+            .map((id, n) => `<a href="${escapeHtml(urlFoto(id))}" target="_blank" rel="noopener"><img src="${escapeHtml(urlFoto(id))}" alt="Foto ${n + 1}" loading="lazy" /></a>`)
+            .join('')}</div>`
+        : ''
+    }
+    <label class="switch det-publicar">
+      <input type="checkbox" id="detPublicada" role="switch" ${t.publicada !== false ? 'checked' : ''} />
+      <span class="switch-track" aria-hidden="true"></span>
+      <span class="switch-label">Mostrar en la página pública</span>
+    </label>
     <div class="det-datos">
       ${dato('Agente', t.agente?.nombre ?? 'Sin asignar')}
       ${dato('Fecha', fmtFecha(t.creadaEn))}
       ${dato('Tipo', p.tipo)}
       ${dato('Cliente', p.cliente)}
+      ${dato('Ubicación', [p.zona === 'otro' ? '' : p.zona, { caba: 'CABA', provincia: 'Provincia de Bs. As.' }[p.jurisdiccion]].filter(Boolean).join(', '))}
+      ${dato('Referencia de mercado', p.referencia ? `${fmtUSD(p.referencia.usdM2)}/m² · ${p.referencia.fuente}, ${p.referencia.periodo}` : '')}
     </div>
     <div class="det-desglose">
       ${filasDesglose(r)
@@ -260,7 +281,80 @@ function abrirDetalle(id) {
     </div>
     ${p.observaciones ? `<div class="det-obs"><span>Observaciones</span><p>${escapeHtml(p.observaciones)}</p></div>` : ''}`;
 
+  $('detPublicada').addEventListener('change', (e) => cambiarPublicacion(t, e.target));
   $('dlgDetalle').showModal();
+}
+
+async function cambiarPublicacion(t, interruptor) {
+  const publicada = interruptor.checked;
+  interruptor.disabled = true;
+  try {
+    const actualizada = await api.publicarTasacion(t.id, publicada);
+    Object.assign(t, { publicada: actualizada.publicada });
+    renderTabla(filtradas());
+    toast(publicada ? 'Visible en la página pública.' : 'Oculta de la página pública.');
+  } catch (err) {
+    interruptor.checked = !publicada;
+    toast(err.message, 'error');
+  } finally {
+    interruptor.disabled = false;
+  }
+}
+
+// ---------- Consultas de la página pública ----------
+let consultas = [];
+
+function renderConsultas() {
+  $('conteoConsultas').textContent = consultas.length
+    ? `${fmtNum(consultas.length)} ${consultas.length === 1 ? 'consulta' : 'consultas'}`
+    : '';
+  $('consultas').innerHTML = consultas.length
+    ? consultas
+        .map(
+          (c) => `
+        <article class="consulta">
+          <header class="consulta-head">
+            <strong>${escapeHtml(c.nombre)}</strong>
+            <small title="${escapeHtml(fmtFecha(c.creadaEn))}">${escapeHtml(fmtHace(c.creadaEn))}</small>
+          </header>
+          <p class="consulta-contacto">
+            ${c.email ? `<a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : ''}
+            ${c.telefono ? `<a href="tel:${escapeHtml(c.telefono.replace(/[^\d+]/g, ''))}">${escapeHtml(c.telefono)}</a>` : ''}
+          </p>
+          ${
+            c.tasacion
+              ? `<p class="consulta-propiedad">Por: <a href="/?propiedad=${encodeURIComponent(c.tasacion.id)}" target="_blank" rel="noopener">${escapeHtml(c.tasacion.titulo)}</a>${esAdmin && c.tasacion.agente ? ` · ${escapeHtml(c.tasacion.agente.nombre)}` : ''}</p>`
+              : '<p class="consulta-propiedad">Consulta general</p>'
+          }
+          <p class="consulta-mensaje">${escapeHtml(c.mensaje)}</p>
+          <button type="button" class="btn btn-danger-ghost" data-borrar-consulta="${escapeHtml(c.id)}">Eliminar</button>
+        </article>`,
+        )
+        .join('')
+    : '<p class="estado-vacio">Todavía no llegaron consultas desde la página.</p>';
+}
+
+async function cargarConsultas() {
+  $('consultasAlcance').textContent = esAdmin
+    ? 'Todas las consultas del formulario de la página pública.'
+    : 'Consultas sobre las propiedades que cargaste.';
+  try {
+    consultas = await api.listarConsultas();
+    renderConsultas();
+  } catch (err) {
+    $('consultas').innerHTML = `<p class="estado-vacio">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function borrarConsulta(id) {
+  if (!confirm('¿Eliminar esta consulta?')) return;
+  try {
+    await api.eliminarConsulta(id);
+    consultas = consultas.filter((c) => c.id !== id);
+    renderConsultas();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
 }
 
 async function eliminarDetalle() {
@@ -307,15 +401,21 @@ function exportarCSV() {
     ['Dirección', (t) => t.propiedad.direccion],
     ['Tipo', (t) => t.propiedad.tipo],
     ['Cliente', (t) => t.propiedad.cliente],
+    ['Ubicación', (t) => ({ caba: 'CABA', provincia: 'Provincia' })[t.propiedad.jurisdiccion] ?? ''],
+    ['Barrio / Partido', (t) => (t.propiedad.zona === 'otro' ? 'Otro' : t.propiedad.zona)],
     ['Sup. cubierta (m²)', (t) => t.datos.supCubierta],
     ['Sup. descubierta (m²)', (t) => t.datos.supDescubierta],
     ['Precio base (USD/m²)', (t) => t.datos.precioBaseM2],
+    ['Referencia de mercado (USD/m²)', (t) => t.propiedad.referencia?.usdM2],
+    ['Fuente de la referencia', (t) => (t.propiedad.referencia ? `${t.propiedad.referencia.fuente} · ${t.propiedad.referencia.periodo}` : '')],
     ['Estado', (t) => label('estados', t.datos.estado)],
     ['Disposición', (t) => label('disposiciones', t.datos.disposicion)],
     ['Valor inmueble (USD)', (t) => entero(t.resultado.inmueble.valor)],
     ['Incluye llave', (t) => (t.resultado.llave?.incluida ? 'Sí' : 'No')],
     ['Valor llave (USD)', (t) => entero(t.resultado.llave?.valor)],
     ['Total (USD)', (t) => entero(t.resultado.total)],
+    ['Fotos', (t) => t.fotos?.length ?? 0],
+    ['Publicada', (t) => (t.publicada === false ? 'No' : 'Sí')],
   ];
 
   const celda = (v) => {
@@ -391,8 +491,13 @@ function iniciar({ usuario }) {
   $('detEliminar').addEventListener('click', eliminarDetalle);
   $('detImprimir').addEventListener('click', imprimirDetalle);
   $('btnExportar').addEventListener('click', exportarCSV);
+  $('consultas').addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-borrar-consulta]');
+    if (boton) borrarConsulta(boton.dataset.borrarConsulta);
+  });
 
   cargar();
+  cargarConsultas();
 }
 
 if (sesion) iniciar(sesion);

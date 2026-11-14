@@ -10,7 +10,8 @@ import { sembrarDatos } from './seed/demo.js';
 export async function iniciarApp() {
   validarEnv();
 
-  const { usuarios, tasaciones, descripcion } = await crearRepositorios();
+  const repos = await crearRepositorios();
+  const { usuarios, tasaciones, descripcion } = repos;
 
   if (env.esEntornoReal && !env.mongodbUri) {
     console.warn('[api] ⚠️  Sin MONGODB_URI: los datos van a archivos JSON y en un servidor gratis se borran en cada reinicio.');
@@ -18,5 +19,5 @@ export async function iniciarApp() {
 
   await sembrarDatos({ usuarios, tasaciones, demoMode: env.demoMode });
 
-  return { app: createApp({ usuarios, tasaciones }), descripcion };
+  return { app: createApp(repos), descripcion };
 }

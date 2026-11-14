@@ -5,6 +5,7 @@
 const CLAVE = 'tasador:sesion:v1';
 
 const LOGIN = '/login.html';
+export const TASADOR = '/tasador.html';
 
 export function obtenerSesion() {
   try {
@@ -56,7 +57,7 @@ export function requerirSesion({ rol } = {}) {
     return null;
   }
   if (rol && sesion.usuario.rol !== rol) {
-    location.replace('/');
+    location.replace(TASADOR);
     return null;
   }
   document.body.classList.add('listo');
@@ -67,5 +68,5 @@ export function requerirSesion({ rol } = {}) {
 export function destinoTrasLogin(usuario, volver) {
   const esInterna = typeof volver === 'string' && volver.startsWith('/') && !volver.startsWith('//');
   if (esInterna && !volver.startsWith(LOGIN)) return volver;
-  return usuario.rol === 'admin' ? '/panel.html' : '/';
+  return usuario.rol === 'admin' ? '/panel.html' : TASADOR;
 }

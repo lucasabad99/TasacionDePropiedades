@@ -1,4 +1,6 @@
 import { env } from '../config/env.js';
+import { crearRepositorioConsultas } from './consultas.repository.js';
+import { crearRepositorioFotos } from './fotos.repository.js';
 import { crearRepositorioTasaciones } from './tasaciones.repository.js';
 import { crearRepositorioUsuarios } from './usuarios.repository.js';
 
@@ -17,6 +19,8 @@ export async function crearRepositorios() {
   return {
     usuarios: crearRepositorioUsuarios(env.dataDir),
     tasaciones: crearRepositorioTasaciones(env.dataDir),
+    fotos: crearRepositorioFotos(env.dataDir),
+    consultas: crearRepositorioConsultas(env.dataDir),
     cerrar: async () => {},
     descripcion: `archivos JSON en ${env.dataDir}`,
   };

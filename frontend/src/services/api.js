@@ -8,10 +8,10 @@ export class ApiError extends Error {
   }
 }
 
-async function request(ruta, { method = 'GET', body, timeout = 8000, publico = false } = {}) {
+async function request(ruta, { method = 'GET', body, timeout = 8000, publico = false, contentType } = {}) {
   const sesion = publico ? null : obtenerSesion();
   const headers = {};
-  if (body) headers['Content-Type'] = 'application/json';
+  if (body) headers['Content-Type'] = contentType ?? 'application/json';
   if (sesion) headers.Authorization = `Bearer ${sesion.token}`;
 
   const controller = new AbortController();
@@ -21,7 +21,8 @@ async function request(ruta, { method = 'GET', body, timeout = 8000, publico = f
     const res = await fetch(`${appConfig.apiUrl}/api${ruta}`, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      // Las fotos se mandan tal cual (Blob); el resto como JSON
+      body: body instanceof Blob ? body : body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
     const data = res.status === 204 ? null : await res.json().catch(() => null);
@@ -44,11 +45,19 @@ export const api = {
   obtenerConfig: () => request('/config', { timeout: 4000, publico: true }),
   login: (usuario, password) => request('/auth/login', { method: 'POST', body: { usuario, password }, publico: true }),
   accesosDemo: () => request('/auth/demo', { timeout: 4000, publico: true }),
+  propiedadesPublicas: () => request('/publico/tasaciones', { timeout: 15000, publico: true }),
+  enviarConsulta: (consulta) => request('/publico/consultas', { method: 'POST', body: consulta, publico: true }),
 
   // Con sesión
   listarTasaciones: () => request('/tasaciones'),
   crearTasacion: (payload) => request('/tasaciones', { method: 'POST', body: payload }),
   eliminarTasacion: (id) => request(`/tasaciones/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  publicarTasacion: (id, publicada) =>
+    request(`/tasaciones/${encodeURIComponent(id)}`, { method: 'PATCH', body: { publicada } }),
+  /** @param {Blob} imagen JPEG ya comprimida */
+  subirFoto: (imagen) => request('/fotos', { method: 'POST', body: imagen, contentType: imagen.type, timeout: 30000 }),
+  listarConsultas: () => request('/consultas'),
+  eliminarConsulta: (id) => request(`/consultas/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 
   // Solo admin
   resumenAgentes: () => request('/admin/agentes'),

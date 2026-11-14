@@ -19,18 +19,25 @@ function preparar() {
   return iniciarApp().then(({ app, descripcion }) => {
     console.log(`[api] Netlify Function lista. Datos: ${descripcion}`);
     return serverless(app, {
+      // Las fotos se devuelven como binario (Netlify las manda en base64)
+      binary: ['image/*'],
       // Según cómo llegue la petición, la ruta puede venir como /.netlify/functions/api/...
       request(req) {
         req.url = req.url.replace(/^\/\.netlify\/functions\/api(?=\/|\?|$)/, '/api');
 
         // Con Express 5, express.json() da la petición por "ya leída" y deja el
-        // body crudo (Buffer). Lo parseamos acá.
+        // body crudo (Buffer). Si es JSON lo parseamos acá; si es una imagen
+        // (subida de fotos) queda como Buffer, que es lo que espera esa ruta.
         if (Buffer.isBuffer(req.body)) {
-          const esJson = /application\/json/i.test(req.headers['content-type'] ?? '');
-          try {
-            req.body = esJson && req.body.length ? JSON.parse(req.body.toString('utf8')) : undefined;
-          } catch {
-            req.body = undefined; // JSON inválido: las rutas responden 400
+          const tipo = req.headers['content-type'] ?? '';
+          if (/application\/json/i.test(tipo)) {
+            try {
+              req.body = req.body.length ? JSON.parse(req.body.toString('utf8')) : undefined;
+            } catch {
+              req.body = undefined; // JSON inválido: las rutas responden 400
+            }
+          } else if (!/^image\//i.test(tipo)) {
+            req.body = undefined;
           }
         }
       },

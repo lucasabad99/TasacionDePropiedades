@@ -79,6 +79,8 @@ export async function sembrarDatos({ usuarios, tasaciones, demoMode }) {
         propiedad: { observaciones: '', ...t.propiedad },
         datos,
         resultado,
+        fotos: [],
+        publicada: true,
         demo: true,
       };
     });

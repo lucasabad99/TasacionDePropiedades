@@ -96,6 +96,53 @@
   color: var(--ink-500);
 }
 
+/* Switch alineado con la base de los campos vecinos */
+.field-check {
+  align-content: end;
+  min-height: 46px;
+}
+
+/* Referencia de mercado del m² (debajo del precio base) */
+.referencia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--brand-500);
+  border-radius: var(--radius-sm);
+  background: var(--brand-50);
+}
+
+.referencia[hidden] {
+  display: none;
+}
+
+.referencia-texto {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--ink-700);
+}
+
+.referencia-texto strong {
+  font-size: 0.95rem;
+  color: var(--ink-900);
+}
+
+.referencia-texto a {
+  color: var(--ink-500);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.btn-sm {
+  min-height: 36px;
+  padding-inline: 14px;
+  flex-shrink: 0;
+}
+
 input[type='text'],
 input[type='password'],
 input[type='number'],
@@ -822,4 +869,84 @@ a.btn {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ===================== Fotos de la tasación ===================== */
+.fotos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.fotos:empty {
+  display: none;
+}
+
+.foto {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+}
+
+.foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.foto.subiendo img {
+  opacity: 0.45;
+}
+
+.foto-estado {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgb(23 25 29 / 0.7);
+}
+
+.foto-quitar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgb(23 25 29 / 0.72);
+  cursor: pointer;
+}
+
+.foto-quitar:hover {
+  background: var(--danger);
+}
+
+.fotos-agregar {
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.fotos-agregar:has(input:disabled) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.fotos-agregar:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.publicar {
+  margin-top: 16px;
 }

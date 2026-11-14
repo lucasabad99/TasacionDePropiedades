@@ -6,9 +6,14 @@ App para tasar propiedades in situ (desde el celular durante la visita): valor d
 
 | URL            | Quién          | Qué hace                                                            |
 | -------------- | -------------- | ------------------------------------------------------------------- |
-| `/login.html`  | Todos          | Ingreso con usuario y contraseña                                    |
-| `/`            | Agente y admin | Tasador. Cada agente ve solo su propio historial                    |
-| `/panel.html`  | Agente y admin | Panel. Agente: sus tasaciones e indicadores. Admin: además, resumen por agente y filtro |
+| `/`             | Público        | Página de la inmobiliaria: propiedades en cards (detalle al tocarlas, con fotos y el agente que la cargó), historia y formulario de contacto |
+| `/login.html`   | Agentes        | Ingreso con usuario y contraseña                                    |
+| `/tasador.html` | Agente y admin | Tasador, con fotos opcionales. Cada agente ve solo su propio historial |
+| `/panel.html`   | Agente y admin | Panel. Agente: sus tasaciones, indicadores y consultas sobre sus propiedades. Admin: además, resumen por agente, filtro y todas las consultas |
+
+Desde la app, el botón **Sitio** de la barra superior abre la página pública; desde la página pública, **Agentes / Ir a la app** vuelve a la app.
+
+**Página pública:** cada tasación aparece salvo que se apague *Mostrar en la página pública* (al cargarla o después, desde el detalle en el panel). Nunca se publica el cliente / propietario. Las fotos se comprimen en el navegador (~300 KB, hasta 12 por tasación) y se guardan en MongoDB. Los textos de *Historia* y los datos de contacto se editan en [`frontend/src/config/sitio.js`](frontend/src/config/sitio.js).
 
 ## Usuarios
 
@@ -42,7 +47,9 @@ TasadorInmobiliario/
 | ------------------------------------------ | ----------------------------------------- |
 | Cambiar un % (estado, disposición, etc.)   | `shared/src/coeficientes.js`              |
 | Cambiar la fórmula                         | `shared/src/tasacion.js`                  |
+| Actualizar precios de referencia del m²    | `shared/src/referencias-m2.js`            |
 | Cambiar colores / marca                    | `frontend/src/styles/tokens.css`          |
+| Historia y datos de contacto de la página  | `frontend/src/config/sitio.js`            |
 | Cambiar el nombre de la inmobiliaria       | `frontend/.env` → `VITE_INMOBILIARIA_NOMBRE` |
 | Dónde se guardan los datos (JSON / MongoDB) | `backend/src/repositories/`              |
 
@@ -60,7 +67,7 @@ cp frontend/.env.example frontend/.env
 npm run dev     # API en :3001 + web en :5173
 ```
 
-Abrir http://localhost:5173. Para probar desde el celular en la misma red: `npm run dev:web -- --host`.
+Abrir http://localhost:5173 (página pública) o http://localhost:5173/tasador.html (tasador). Para probar desde el celular en la misma red: `npm run dev:web -- --host`.
 
 ## Scripts
 
@@ -71,6 +78,19 @@ Abrir http://localhost:5173. Para probar desde el celular en la misma red: `npm 
 | `npm start`     | Levanta el backend (con `SERVE_FRONTEND=true` sirve también la web) |
 | `npm test`      | Corre los tests de la fórmula de tasación              |
 | `npm run usuario:crear -- …` | Crea un usuario (ver sección Usuarios)    |
+
+## Precios de referencia del m²
+
+Al elegir **Ubicación** (CABA o Provincia), **Barrio / Partido**, **Ambientes** y **A estrenar**, el tasador propone el precio base y muestra de dónde sale. El agente lo puede cambiar; si lo cambió a mano, la app no se lo pisa (el botón **Usar** vuelve a la referencia).
+
+| Ubicación  | Fuente                                                                 | Detalle                                         |
+| ---------- | ---------------------------------------------------------------------- | ----------------------------------------------- |
+| CABA       | IDECBA, *Dinámica del mercado de venta de departamentos* (trimestral) | Por comuna del barrio, 1/2/3 amb., usado / a estrenar |
+| Provincia  | Index Zonaprop GBA Norte, Oeste y Sur (mensual)                        | Por municipio                                   |
+
+Son **precios de publicación** (oferta), no de escritura. Cada tasación guarda la referencia que usó, con fuente y período, y sale en el informe impreso.
+
+**Actualizar cada trimestre:** seguir los pasos del encabezado de [`shared/src/referencias-m2.js`](shared/src/referencias-m2.js), correr `npm test` y subir a `develop`.
 
 ## Staging en Netlify
 

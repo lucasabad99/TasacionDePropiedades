@@ -17,7 +17,8 @@ export default defineConfig(({ mode }) => {
       // Una página HTML por pantalla
       rollupOptions: {
         input: {
-          tasador: 'index.html',
+          sitio: 'index.html',
+          tasador: 'tasador.html',
           login: 'login.html',
           panel: 'panel.html',
         },

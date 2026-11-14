@@ -8,12 +8,16 @@ import { manejarErrores, noEncontrado } from './middleware/errores.js';
 import { crearAdminRouter } from './routes/admin.routes.js';
 import { crearAuthRouter } from './routes/auth.routes.js';
 import { crearConfigRouter } from './routes/config.routes.js';
+import { crearConsultasRouter } from './routes/consultas.routes.js';
+import { crearFotosRouter } from './routes/fotos.routes.js';
+import { crearPublicoRouter } from './routes/publico.routes.js';
 import { crearTasacionesRouter } from './routes/tasaciones.routes.js';
 
 /**
- * @param {{ usuarios: object, tasaciones: object }} repos  Repositorios (archivo JSON, base de datos, etc.)
+ * @param {{ usuarios: object, tasaciones: object, fotos: object, consultas: object }} repos
+ *   Repositorios (archivo JSON, base de datos, etc.)
  */
-export function createApp({ usuarios, tasaciones }) {
+export function createApp({ usuarios, tasaciones, fotos, consultas }) {
   const app = express();
   const auth = crearAuth({ usuarios, secreto: env.authSecret });
 
@@ -26,9 +30,13 @@ export function createApp({ usuarios, tasaciones }) {
   app.get('/api/health', (_req, res) => res.json({ ok: true, entorno: env.nodeEnv }));
   app.use('/api/config', crearConfigRouter());
   app.use('/api/auth', crearAuthRouter({ usuarios, auth }));
+  app.use('/api/publico', crearPublicoRouter({ tasaciones, consultas }));
+  // GET de fotos es público; subir requiere sesión (lo resuelve el router)
+  app.use('/api/fotos', crearFotosRouter({ fotos, auth }));
 
   // --- API con sesión ---
-  app.use('/api/tasaciones', auth.requerirSesion, crearTasacionesRouter(tasaciones));
+  app.use('/api/tasaciones', auth.requerirSesion, crearTasacionesRouter({ tasaciones, fotos }));
+  app.use('/api/consultas', auth.requerirSesion, crearConsultasRouter({ consultas }));
   app.use('/api/admin', auth.requerirSesion, auth.requerirRol('admin'), crearAdminRouter({ usuarios, tasaciones }));
 
   app.use('/api', noEncontrado);

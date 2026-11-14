@@ -1,3 +1,4 @@
+import { JURISDICCIONES, zonasDe } from '@tasador/shared';
 import { escapeHtml, fmtAjuste, fmtNum } from '../lib/format.js';
 
 /** Campos numéricos/selección que entran en el cálculo. */
@@ -15,8 +16,10 @@ const CAMPOS_DATOS = [
   'multiploEbitda',
 ];
 
-/** Campos descriptivos (no afectan el valor). */
-const CAMPOS_PROPIEDAD = ['direccion', 'tipo', 'cliente', 'observaciones'];
+/** Campos descriptivos (no afectan el cálculo; la ubicación define el precio de referencia). */
+const CAMPOS_PROPIEDAD = ['direccion', 'tipo', 'cliente', 'observaciones', 'jurisdiccion', 'zona', 'ambientes'];
+
+const AMBIENTES_POR_DEFECTO = '2';
 
 const chip = (name, value, label, meta) => `
   <label class="chip">
@@ -52,6 +55,10 @@ export function renderOpciones(form, coef) {
     '<option value="">Seleccionar…</option>' +
     coef.tiposPropiedad.map((t) => `<option>${escapeHtml(t)}</option>`).join('');
 
+  $('[data-opciones="jurisdicciones"]').innerHTML =
+    '<option value="">Seleccionar…</option>' +
+    JURISDICCIONES.map((j) => `<option value="${j.id}">${escapeHtml(j.label)}</option>`).join('');
+
   $('#hintDescubierta').textContent = `Computa al ${fmtNum(coef.factorSuperficieDescubierta * 100)}%`;
 }
 
@@ -61,7 +68,7 @@ export function leerFormulario(form) {
   const datos = { incluyeLlave: el.incluyeLlave.checked };
   for (const campo of CAMPOS_DATOS) datos[campo] = el[campo].value;
 
-  const propiedad = {};
+  const propiedad = { aEstrenar: el.aEstrenar.checked };
   for (const campo of CAMPOS_PROPIEDAD) propiedad[campo] = el[campo].value.trim();
 
   return { datos, propiedad };
@@ -80,9 +87,33 @@ export function cargarFormulario(form, { datos = {}, propiedad = {} }) {
   el.incluyeLlave.checked = Boolean(datos.incluyeLlave === true || datos.incluyeLlave === 'true');
 
   for (const campo of CAMPOS_PROPIEDAD) el[campo].value = propiedad[campo] ?? '';
+  el.ambientes.value = propiedad.ambientes || AMBIENTES_POR_DEFECTO;
+  el.aEstrenar.checked = propiedad.aEstrenar === true || propiedad.aEstrenar === 'true';
+  // Las opciones de barrio/partido dependen de la ubicación: se cargan antes de elegir la zona
+  actualizarZonas(form, propiedad.zona ?? '');
 
   sincronizarLlave(form);
   limpiarErrores(form);
+}
+
+/**
+ * Carga el selector "Barrio / Partido" según la ubicación elegida.
+ * Conserva la zona elegida si sigue siendo válida.
+ */
+export function actualizarZonas(form, zonaElegida = form.elements.zona.value) {
+  const { jurisdiccion, zona } = form.elements;
+  const zonas = zonasDe(jurisdiccion.value);
+
+  form.querySelector('#labelZona').textContent =
+    jurisdiccion.value === 'caba' ? 'Barrio' : jurisdiccion.value === 'provincia' ? 'Partido' : 'Barrio / Partido';
+
+  zona.disabled = zonas.length === 0;
+  zona.innerHTML = zonas.length
+    ? '<option value="">Seleccionar…</option>' +
+      zonas.map((z) => `<option>${escapeHtml(z)}</option>`).join('') +
+      (jurisdiccion.value === 'provincia' ? '<option value="otro">Otro (sin referencia)</option>' : '')
+    : '<option value="">Elegí primero la ubicación</option>';
+  zona.value = zonas.includes(zonaElegida) || zonaElegida === 'otro' ? zonaElegida : '';
 }
 
 /** Muestra u oculta la sección de llave según el switch. */

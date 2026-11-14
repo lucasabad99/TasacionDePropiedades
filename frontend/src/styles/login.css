@@ -216,3 +216,14 @@ button.demo-fila:hover {
   background: var(--brand-500);
   color: var(--ink-900);
 }
+
+.login-sitio {
+  display: block;
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--brand-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

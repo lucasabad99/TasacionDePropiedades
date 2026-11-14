@@ -1,11 +1,13 @@
 import { escapeHtml, iniciales } from '../lib/format.js';
-import { cerrarSesion } from '../services/sesion.js';
+import { TASADOR, cerrarSesion } from '../services/sesion.js';
 
 const ICONOS = {
   panel:
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
   tasar:
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg>',
+  sitio:
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
   salir:
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>',
 };
@@ -20,12 +22,13 @@ export function renderTopbar(contenedor, usuario, { pagina }) {
   const nombrePanel = usuario.rol === 'admin' ? 'Panel' : 'Mi panel';
   const enlace =
     pagina === 'panel'
-      ? `<a class="btn btn-on-dark" href="/">${ICONOS.tasar}<span class="btn-label">Tasar</span></a>`
+      ? `<a class="btn btn-on-dark" href="${TASADOR}">${ICONOS.tasar}<span class="btn-label">Tasar</span></a>`
       : `<a class="btn btn-on-dark" href="/panel.html">${ICONOS.panel}<span class="btn-label">${nombrePanel}</span></a>`;
 
   contenedor.insertAdjacentHTML(
     'beforeend',
-    `${enlace}
+    `<a class="btn btn-on-dark" href="/" title="Ver la página pública" aria-label="Ver la página pública">${ICONOS.sitio}<span class="btn-label">Sitio</span></a>
+    ${enlace}
     <div class="user-chip" title="${escapeHtml(usuario.nombre)}">
       <span class="avatar" aria-hidden="true">${escapeHtml(iniciales(usuario.nombre))}</span>
       <span class="user-info">

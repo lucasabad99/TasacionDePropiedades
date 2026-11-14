@@ -22,6 +22,17 @@ export function crearRepositorioTasaciones(dataDir) {
       return store.modificar((items) => ({ items: [...items, tasacion], resultado: tasacion }));
     },
 
+    /** Cambia campos sueltos (ej. publicada). Devuelve la tasación actualizada o null. */
+    actualizar(id, cambios) {
+      return store.modificar((items) => {
+        const i = items.findIndex((t) => t.id === id);
+        if (i === -1) return { resultado: null };
+        const copia = [...items];
+        copia[i] = { ...items[i], ...cambios };
+        return { items: copia, resultado: copia[i] };
+      });
+    },
+
     crearVarias(lista) {
       return store.modificar((items) => ({ items: [...items, ...lista], resultado: lista.length }));
     },

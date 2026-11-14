@@ -1,16 +1,24 @@
+import { JURISDICCIONES } from '@tasador/shared';
 import { escapeHtml, fmtUSD } from '../lib/format.js';
 import { filasDesglose } from './resultados.js';
 
 const filaDato = (label, valor) =>
   valor ? `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(valor)}</td></tr>` : '';
 
+const ubicacion = (p) => {
+  const jurisdiccion = JURISDICCIONES.find((j) => j.id === p.jurisdiccion)?.label;
+  const zona = p.zona && p.zona !== 'otro' ? p.zona : '';
+  return [zona, jurisdiccion].filter(Boolean).join(', ');
+};
+
 /** Arma el reporte que se imprime / guarda como PDF. */
-export function prepararReporte(el, { propiedad, resultado, nombreInmobiliaria, tasador, fecha = new Date() }) {
+export function prepararReporte(el, { propiedad, referencia, resultado, nombreInmobiliaria, tasador, fecha = new Date() }) {
   const hoy = new Intl.DateTimeFormat('es-AR', { dateStyle: 'long' }).format(new Date(fecha));
 
   const datosPropiedad = [
     filaDato('Dirección', propiedad.direccion),
     filaDato('Tipo', propiedad.tipo),
+    filaDato('Ubicación', ubicacion(propiedad)),
     filaDato('Cliente / Propietario', propiedad.cliente),
     filaDato('Tasado por', tasador),
   ].join('');
@@ -40,6 +48,18 @@ export function prepararReporte(el, { propiedad, resultado, nombreInmobiliaria, 
     ${datosPropiedad ? `<h2>Propiedad</h2><table>${datosPropiedad}</table>` : ''}
 
     <table>${desglose}</table>
+
+    ${
+      referencia
+        ? `<h2>Referencia de mercado</h2>
+           <table>
+             ${filaDato('Precio de referencia', `${fmtUSD(referencia.usdM2)}/m²`)}
+             ${filaDato('Detalle', referencia.detalle)}
+             ${filaDato('Fuente', `${referencia.fuente} · ${referencia.periodo}`)}
+           </table>
+           <p class="rep-legal">Precio promedio de publicación (oferta), no de escritura.</p>`
+        : ''
+    }
 
     ${propiedad.observaciones ? `<h2>Observaciones</h2><p class="rep-obs">${escapeHtml(propiedad.observaciones)}</p>` : ''}
 
